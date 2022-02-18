@@ -2,15 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class ObjInfo
+{
+    public GameObject goPrefab;
+    public int poolSize;
+    public Transform pool;
+}
+
+
 public class ObjectPool : MonoBehaviour
 {
+    [SerializeField] ObjInfo[] ObjInfo = null;
+
     public static ObjectPool instance;
-
-    [SerializeField] GameObject goPreFab = null;
-
-    [SerializeField] Transform pool = null;
-
-    [SerializeField] int poolSize;
 
     public Queue<GameObject> plateList = new Queue<GameObject>();
 
@@ -20,33 +25,32 @@ public class ObjectPool : MonoBehaviour
     {
         instance = this;
 
-        plateList = InsertQueue();
+        plateList = InsertQueue(ObjInfo[0]);
 
         theGameManager = FindObjectOfType<GameManager>();
     }
-
-    Queue<GameObject> InsertQueue()
+    Queue<GameObject> InsertQueue(ObjInfo objInfo)
     {
-        Queue<GameObject> tempObject = new Queue<GameObject>();
+        Queue<GameObject> tempQueue = new Queue<GameObject>();
 
-        for( int i = 0; i < poolSize; i++)
+        for (int i = 0; i < objInfo.poolSize; i++)
         {
-            GameObject clone = Instantiate(goPreFab, transform.position, Quaternion.identity);
+            GameObject clone = Instantiate(objInfo.goPrefab, transform.position, Quaternion.identity);
 
             clone.SetActive(false);
 
-            if(pool != null)
+            if (objInfo.pool != null)
             {
-                clone.transform.SetParent(pool);
+                clone.transform.SetParent(objInfo.pool);
             }
             else
             {
                 clone.transform.SetParent(this.transform);
             }
 
-            tempObject.Enqueue(clone);          
+            tempQueue.Enqueue(clone);
         }
 
-        return tempObject;
+        return tempQueue;
     }
 }

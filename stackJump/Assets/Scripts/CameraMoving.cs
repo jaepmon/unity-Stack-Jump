@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class CameraMoving : MonoBehaviour
 {
-    private Vector3 cameraPos;
     Player thePlayer;
 
     float maxY = 0;
@@ -16,7 +15,7 @@ public class CameraMoving : MonoBehaviour
     {
         maxY = 0;
     }
-    private void LateUpdate()
+    void LateUpdate()
     {
         MoveCamera();
     }

@@ -4,34 +4,37 @@ using UnityEngine;
 
 public class PlateSpawn : MonoBehaviour
 {
-    public static PlateSpawn instance;
-    public static int randomSpawnPos;
-
-    [SerializeField] Plate plate = null;
     [SerializeField] Transform[] spawnSpot = null;
+
     public float plateSpeed = 5;
+    public int randomSpawnPos;
+
+    Vector3 initPos;
 
     public List<GameObject> boxPlateList = new List<GameObject>();
-    private Vector3 initPos;
-    private void Awake()
+
+    GameManager gm;
+    void Awake()
     {
-        instance = this;
+        gm = FindObjectOfType<GameManager>();
     }
-    
     public void CreatePlate()
     {
-        GameObject tempPlate = ObjectPool.instance.plateList.Dequeue();
-        randomSpawnPos = Random.Range(0, 2);
-        tempPlate.transform.position = spawnSpot[randomSpawnPos].position;
-        tempPlate.gameObject.SetActive(true);
-        boxPlateList.Add(tempPlate);
-        float plateSpeed = this.plateSpeed;
-        if (randomSpawnPos == 1)
+        if(gm.isGameStart)
         {
-            plateSpeed *= -1;
+            GameObject tempPlate = ObjectPool.instance.plateList.Dequeue();
+            randomSpawnPos = Random.Range(0, 2);
+            tempPlate.transform.position = spawnSpot[randomSpawnPos].position;
+            tempPlate.gameObject.SetActive(true);
+            boxPlateList.Add(tempPlate);
+            float plateSpeed = this.plateSpeed;
+            if (randomSpawnPos == 1)
+            {
+                plateSpeed *= -1;
+            }
+            Plate createPlate = tempPlate.GetComponent<Plate>();
+            createPlate.Init(plateSpeed);
         }
-        Plate createPlate = tempPlate.GetComponent<Plate>();
-        createPlate.Init(plateSpeed);
     }
     public void Init()
     {
@@ -39,14 +42,17 @@ public class PlateSpawn : MonoBehaviour
     }
     public void SpawnPosUp()
     {
-        transform.position = new Vector3(transform.position.x, transform.position.y + 0.8f, transform.position.z);
-        
-        CreatePlate();
+        if(gm.isGameStart)
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y + 0.8f, transform.position.z);
+
+            CreatePlate();
+        }
     }
 
     public void RemovePlate()
     {
-        GameManager.instance.isGameStart = false;
+        gm.isGameStart = false;
 
         for(int i = 0; i < boxPlateList.Count; i++)
         {

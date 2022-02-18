@@ -5,76 +5,77 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance;
+    public GameObject comboEffect;
+    public GameObject settingUI;
     public Text textStart;
     public Text textScore;
-    public int score;
-    public int comboCount;
     public bool isGameStart = false;
-    public GameObject comboEffect;
+    public bool isSettingUI = false;
+    public int increaseScore = 10;
+    public int comboBonusScore = 10;
+    public int comboCount;
+    int currentScore = 0;
+    BacktoObjectPool theBacktoObjectPool;
     CameraMoving theCameraMoving;
+    PlateSpawn ps;
     Player thePlayer;
     Plate thePlate;
-    BacktoObjectPool theBacktoObjectPool;
 
-    private void Awake()
+    void Awake()
     {
-        instance = this;
-    }
-    public void Start()
-    {
+        theBacktoObjectPool = FindObjectOfType<BacktoObjectPool>();
         theCameraMoving = FindObjectOfType<CameraMoving>();
         thePlayer = FindObjectOfType<Player>();
         thePlate = FindObjectOfType<Plate>();
-        theBacktoObjectPool = FindObjectOfType<BacktoObjectPool>();
+        ps = FindObjectOfType<PlateSpawn>();
     }
     public void OnClickStart()
     {
-        isGameStart = true;
 
-        PlateSpawn.instance.CreatePlate();
+        isGameStart = isSettingUI ? false : true;
 
-        textStart.gameObject.SetActive(false);
-        
+        if(isGameStart)
+        {
+            ps.CreatePlate();
+
+            textStart.gameObject.SetActive(false);
+        }
     }
-
     public void OnClickJump()
     {
         thePlayer.Jump();
         theBacktoObjectPool.MoveLine();
     }
-
+    public void OnClickSetting()
+    {
+        isSettingUI = true;
+        settingUI.SetActive(true);
+    }
+    public void OnClickOutSetting()
+    {
+        isSettingUI = false;
+        settingUI.SetActive(false);
+    }
     public void Init()
     {
         theBacktoObjectPool.Init();
         theCameraMoving.Init();
-        score = 0;
-        SetScore(score);
-        PlateSpawn.instance.Init();
         thePlayer.Init();
+        ps.Init();
+        currentScore = 0;
+        comboCount = 0;
+        SetScore(currentScore);
         textStart.gameObject.SetActive(true);
     }
-
-    public void SetScore(int score)
-    {
-        textScore.text = string.Format("{0:n0}", score);
-    }
-
-    public void AddScore()
-    {
-        score++;
-        SetScore(score);
-    }
-
     public void ComboSuccess()
     {
-        comboCount++;
+        ++comboCount;
+
         if (comboCount > 2)
         {
             ComboEffect();
         }
     }
-
     public void ComboFail()
     {
         comboCount = 0;
@@ -83,5 +84,21 @@ public class GameManager : MonoBehaviour
     {
         GameObject createComboEf = Instantiate(comboEffect, thePlayer.transform.position, thePlayer.transform.rotation);
         Destroy(createComboEf, 0.3f);
+    }
+    public void AddScore()
+    {
+        ComboSuccess();
+
+        int bonusComboScore = (comboCount / 2) * comboBonusScore;
+
+        int totalIncreaseScore = increaseScore + bonusComboScore;
+
+        currentScore += totalIncreaseScore;
+
+        SetScore(currentScore);
+    }
+    public void SetScore(int score)
+    {
+        textScore.text = string.Format("{0:n0}", score);
     }
 }

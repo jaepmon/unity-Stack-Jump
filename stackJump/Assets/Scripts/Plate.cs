@@ -6,50 +6,57 @@ public class Plate : MonoBehaviour
 {
     public float speed = 0;
     public bool isMove;
-    
+
+    GameManager gm;
+    PlateSpawn ps;
+    Player thePlayer;
+
+    void Awake()
+    {
+        thePlayer = FindObjectOfType<Player>();
+        ps = FindObjectOfType<PlateSpawn>();
+        gm = FindObjectOfType<GameManager>();
+    }
     public void Init(float speed)
     {
         this.speed = speed;
         isMove = true;
     }
-
-    // Update is called once per frame
     void Update()
     {
         if (isMove)
         {
-            transform.position += new Vector3(speed * Time.deltaTime, 0f, 0f);
+            transform.position += new Vector3(speed * Time.deltaTime, 0f, 0f);         
         }
     }
-
-    private void OnCollisionEnter(Collision collision)
+    void OnCollisionEnter(Collision collision)
     {
         isMove = false;
-
-        if (transform.position.y + 0.4f < collision.transform.position.y)
+        if ((transform.position.y + 0.4f < collision.transform.position.y) && !isMove)
         {
-            PlateSpawn.instance.SpawnPosUp();
-            GameManager.instance.AddScore();
+            ps.SpawnPosUp();
+            RaycastHit hit;
+            Physics.Raycast(transform.position, Vector3.down, out hit, 0.5f);
+            if(hit.transform == null)
+            {
+                gm.AddScore();
+                gm.ComboFail();
+                return;
+            }
+            float value = transform.position.x - hit.transform.position.x;
 
-            if (transform.position.x < Player.instance.transform.position.x - 0.3f
-                || transform.position.x > Player.instance.transform.position.x + 0.3f)
+            if ((value < -0.3f || value > 0.3f) && hit.transform.CompareTag("Plate") )
             {
-                GameManager.instance.ComboSuccess();
+                gm.ComboFail();
             }
-            else 
-            {
-                GameManager.instance.ComboFail();
-                  
-            }
+            gm.AddScore();
+
+            
         }
         else
         {
-            Player.instance.PlayerDie();
+            thePlayer.PlayerDie();
         }
-    }
-
-    public void HidePlate()
-    {
-        gameObject.SetActive(false);
+        
     }
 }
